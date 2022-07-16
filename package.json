@@ -1,0 +1,19 @@
+{
+  "name": "epub-reader",
+  "version": "1.0.0",
+  "description": "Leitor de arquivos epubs (ebook)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bruno-Oliveira-e-Oliveira/epub-reader.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Bruno-Oliveira-e-Oliveira/epub-reader/issues"
+  },
+  "homepage": "https://github.com/Bruno-Oliveira-e-Oliveira/epub-reader#readme"
+}
