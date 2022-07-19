@@ -7,22 +7,30 @@ function readFile(name) {
     return fileContent;
 }
 
-async function loadEpub(fileContent) {
-    const epub = {};
+function loadEpub(fileContent) {
     const zip = JSZip();
-
-    zip.loadAsync(fileContent).then((epubContent) => {
-
-        epubContent.file('mimetype').async('string').then((mimetype) => {
-            epub.mimetype = mimetype;
-
-            console.log(epub);
-        });
+    return zip.loadAsync(fileContent).then((result) => {
+        return result;
     });
-
 }
 
+const epub = {};
 const fileContent = readFile('teste.epub');
-loadEpub(fileContent);
+const epubContent = loadEpub(fileContent);
+
+epubContent.then(async (result) => {
+    epub.mimetype = await result.file('mimetype').async('string').then((mimetype) => {
+        return mimetype;
+    });
+
+    epub.contentLocation = await result.file('META-INF/container.xml').async('string').then((container) => {
+        console.log(container);
+
+        
+        // return contentLocation;
+    });
+
+    console.log(epub);
+});
 
 
