@@ -1,5 +1,6 @@
 const fs = require('fs');
 const JSZip = require('jszip');
+const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
 
 function readFile(name) {
     const fileContent = fs.readFileSync(`${__dirname}/${name}`);
@@ -24,10 +25,24 @@ epubContent.then(async (result) => {
     });
 
     epub.contentLocation = await result.file('META-INF/container.xml').async('string').then((container) => {
-        console.log(container);
+        const options = {
+            ignoreAttributes : false
+        };
+        const parser = new XMLParser(options);
+        const containerObject = parser.parse(container);
+        const contentLocation = containerObject.container.rootfiles.rootfile['@_full-path'];
 
-        
-        // return contentLocation;
+        return contentLocation;
+    });
+
+    epub.contentOBJ = await result.file(epub.contentLocation).async('string').then((contentXML) => {
+        const options = {
+            ignoreAttributes : false
+        };
+        const parser = new XMLParser(options);
+        const contentOBJ = parser.parse(contentXML);
+
+        return contentOBJ;
     });
 
     console.log(epub);

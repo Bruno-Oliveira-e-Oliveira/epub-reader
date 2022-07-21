@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Bruno-Oliveira-e-Oliveira/epub-reader#readme",
   "dependencies": {
+    "fast-xml-parser": "^4.0.9",
     "jszip": "^3.10.0"
   }
 }
