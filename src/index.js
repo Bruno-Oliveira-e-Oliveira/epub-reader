@@ -45,7 +45,31 @@ epubContent.then(async (result) => {
         return contentOBJ;
     });
 
-    console.log(epub);
+    const spine = epub.contentOBJ.package.spine.itemref;
+    const manifest = epub.contentOBJ.package.manifest.item;
+
+    spine.forEach(async (item) => {
+        let spineItem = item['@_idref'];
+        let spineItemInfo = manifest.filter((manifestItem) => {return spineItem === manifestItem['@_id']});
+
+        // let test = spineItemInfo[0]['@_href'];
+        // console.log(test)
+
+        // console.log(result.file('Text/Cover.xhtml').async('string'))
+        // result.file(test).async('string').then((fileXHtml) => {
+
+        //     console.log(fileXHtml);
+        // });
+
+    });
+
+
+
+
+
+    // console.log(manifest);
+
+    // console.log(epub);
 });
 
 
