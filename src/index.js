@@ -24,18 +24,21 @@ epubContent.then(async (result) => {
         return mimetype;
     });
 
-    epub.contentLocation = await result.file('META-INF/container.xml').async('string').then((container) => {
+    epub.fullPath = await result.file('META-INF/container.xml').async('string').then((container) => {
         const options = {
             ignoreAttributes : false
         };
         const parser = new XMLParser(options);
         const containerObject = parser.parse(container);
-        const contentLocation = containerObject.container.rootfiles.rootfile['@_full-path'];
+        const fullPath = containerObject.container.rootfiles.rootfile['@_full-path'];
 
-        return contentLocation;
+        return fullPath;
     });
 
-    epub.contentOBJ = await result.file(epub.contentLocation).async('string').then((contentXML) => {
+    let position = epub.fullPath.search('content.opf');
+    epub.contentPath = epub.fullPath.substring(0, position)
+
+    epub.contentOBJ = await result.file(epub.fullPath).async('string').then((contentXML) => {
         const options = {
             ignoreAttributes : false
         };
@@ -51,23 +54,17 @@ epubContent.then(async (result) => {
     spine.forEach(async (item) => {
         let spineItem = item['@_idref'];
         let spineItemInfo = manifest.filter((manifestItem) => {return spineItem === manifestItem['@_id']});
+        let spineItemFilePath = spineItemInfo[0]['@_href'];
 
-        // let test = spineItemInfo[0]['@_href'];
-        // console.log(test)
-
-        // console.log(result.file('Text/Cover.xhtml').async('string'))
-        // result.file(test).async('string').then((fileXHtml) => {
-
-        //     console.log(fileXHtml);
-        // });
+        result.file(epub.contentPath + spineItemFilePath).async('string').then((fileHtml) => {
+            fs.writeFile('result/' + spineItem, fileHtml, (err) => {
+                if (err) throw err;
+                console.log(`${spineItem} is created successfully.`);
+            });            
+        });
 
     });
 
-
-
-
-
-    // console.log(manifest);
 
     // console.log(epub);
 });
