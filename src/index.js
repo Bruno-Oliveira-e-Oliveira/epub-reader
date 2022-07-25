@@ -56,14 +56,53 @@ epubContent.then(async (result) => {
         let spineItemInfo = manifest.filter((manifestItem) => {return spineItem === manifestItem['@_id']});
         let spineItemFilePath = spineItemInfo[0]['@_href'];
 
-        result.file(epub.contentPath + spineItemFilePath).async('string').then((fileHtml) => {
-            fs.writeFile('result/' + spineItem, fileHtml, (err) => {
-                if (err) throw err;
-                console.log(`${spineItem} is created successfully.`);
-            });            
+        result.file(epub.contentPath + spineItemFilePath).async('string').then(async (filexHtml) => {
+
+
+            if (spineItem === 'Cover.xhtml') {
+
+                //--- Test
+                const options = {
+                    ignoreAttributes : false
+                };
+                const parser = new XMLParser(options);                
+                const fileOBJ = parser.parse(filexHtml);
+                
+                let img = fileOBJ.html.body.div.svg.image['@_xlink:href'];
+
+                let repeat = true;
+                while (repeat) {
+                    let position = img.search('/');
+                    if (position >= 0) {
+                        img = img.substring(position +1);
+                    } else {
+                        repeat = false;
+                    }
+                }
+                
+                let imgInfo = manifest.filter((manifestItem) => {return img === manifestItem['@_id']});
+
+                let newFileXHtml = await result.file(epub.contentPath + imgInfo[0]['@_href']).async('base64').then((imageBase64) => {                    
+                    fileOBJ.html.body.div.svg.image['@_xlink:href'] = `data:${imgInfo[0]['@_media-type']};base64;${imageBase64}`; 
+                    let builder = new XMLBuilder(options);
+                    return builder.build(fileOBJ);
+                }); 
+
+                fs.writeFile('result/' + spineItem, newFileXHtml, (err) => {
+                    if (err) throw err;
+                    console.log(`${spineItem} is created successfully.`);
+                });      
+            }      
+
+
+
+
         });
 
     });
+
+
+
 
 
     // console.log(epub);
