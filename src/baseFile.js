@@ -16,16 +16,18 @@ class BaseFile {
         }
     }
 
-    unpack() {
+    async unpack() {
         const data = this.read();
         
         if (!data) {
             return data;
         }
 
-        return 'OK';
+        const zip = new JSZip();
+        return await zip.loadAsync(data).then((files) => {
+            return files;
+        });
     }
-
 }
 
 module.exports = BaseFile;

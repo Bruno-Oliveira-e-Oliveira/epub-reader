@@ -1,11 +1,15 @@
 const BaseFile = require('./baseFile');
-const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
+const EPub = require('./epub');
 
 function main() {
-    const baseFile = new BaseFile('teste.epubs');
-    const data = baseFile.unpack();
+    const baseFile = new BaseFile('teste.epub');
+    const zip = baseFile.unpack();
 
-    console.log('Result:'+data)
+    const epub = new EPub(zip);
+
+    
+   
+    
 
 
 }
