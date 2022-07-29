@@ -6,6 +6,9 @@ class EPub {
         this.validated = false;
         this.mimetypeFile = 'mimetype';
         this.containerFile = 'META-INF/container.xml';
+        this.contentFile = 'content.opf';
+        this.contentFullPath = undefined;
+        this.contentBasePath = undefined;
         this.load();   
     }
 
@@ -19,15 +22,24 @@ class EPub {
                 return undefined;
             }
 
-            await result.file(this.containerFile).async('string').then((container) => {
-                console.log(container);
+            this.contentFullPath = await result.file(this.containerFile).async('string').then((container) => {
+                const options = {
+                    ignoreAttributes: false
+                }
+                const parser = new XMLParser(options);
+                const output = parser.parse(container);
+
+                return output.container.rootfiles.rootfile['@_full-path']; //--- "application/oebps-package+xml"    
             });
 
+            if (!this.contentFullPath) {
+                return undefined;
+            }
 
-
-
+            let position = this.contentFullPath.search(this.contentFile);
+            this.contentBasePath = this.contentFullPath.substring(0, position);
             
-
+            console.log(this)
         });
     }
 
