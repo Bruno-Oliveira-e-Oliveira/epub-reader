@@ -6,7 +6,7 @@ class EPub {
         this.validated = false;
         this.mimetypeFile = 'mimetype';
         this.containerFile = 'META-INF/container.xml';
-        this.contentFile = 'content.opf';
+        this.contentFile = 'content.opf'; //--- temp
         this.contentFullPath = undefined;
         this.contentBasePath = undefined;
         this.load();   
@@ -38,8 +38,8 @@ class EPub {
 
             let position = this.contentFullPath.search(this.contentFile);
             this.contentBasePath = this.contentFullPath.substring(0, position);
-            
-            console.log(this)
+
+            this.getSpine();
         });
     }
 
@@ -50,6 +50,45 @@ class EPub {
             return false;
         }
     }
+
+    getSpine() {
+        this.files.then(async (result) => {
+            await result.file(this.contentFullPath).async('string').then((content) => {
+                const options = {
+                    ignoreAttributes: false
+                }
+                const parser = new XMLParser(options);
+                const contentObj = parser.parse(content);
+                const spine = contentObj.package.spine.itemref;
+
+                if (Array.isArray(spine)) {
+                    spine.forEach(spineItem => {
+                        this.getManifestItem(spineItem['@_idref']);
+                    });
+                } else {
+                    this.getManifestItem(spine['@_idref']);
+                }
+
+
+
+            });
+
+        });    
+
+        // console.log(this)
+    }
+
+    getManifestItem(id) {
+        this.files.then(async (result) => {
+            await result.file(this.contentFullPath).async('string').then((content) => {
+
+
+                console.log(content);
+            });
+        });    
+    }
+
+
 
 }
 
