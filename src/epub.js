@@ -9,6 +9,8 @@ class EPub {
         this.contentFile = 'content.opf'; //--- temp
         this.contentFullPath = undefined;
         this.contentBasePath = undefined;
+        this.manifest = undefined;
+        this.spine = undefined;
         this.load();   
     }
 
@@ -39,7 +41,17 @@ class EPub {
             let position = this.contentFullPath.search(this.contentFile);
             this.contentBasePath = this.contentFullPath.substring(0, position);
 
-            this.getSpine();
+            await result.file(this.contentFullPath).async('string').then((content) => {
+                const options = {
+                    ignoreAttributes: false
+                }
+                const parser = new XMLParser(options);
+                const contentObject = parser.parse(content);
+                this.manifest = contentObject.package.manifest.item;
+                this.spine = contentObject.package.spine.itemref;
+            });
+
+            this.getSpineItems();
         });
     }
 
@@ -51,41 +63,32 @@ class EPub {
         }
     }
 
-    getSpine() {
-        this.files.then(async (result) => {
-            await result.file(this.contentFullPath).async('string').then((content) => {
-                const options = {
-                    ignoreAttributes: false
-                }
-                const parser = new XMLParser(options);
-                const contentObj = parser.parse(content);
-                const spine = contentObj.package.spine.itemref;
+    getSpineItems() {
+        if (Array.isArray(this.spine)) {
+            this.spine.forEach(spineItem => {
+                const manifestItemObject = this.getManifestItem(spineItem['@_idref']);
 
-                if (Array.isArray(spine)) {
-                    spine.forEach(spineItem => {
-                        this.getManifestItem(spineItem['@_idref']);
-                    });
-                } else {
-                    this.getManifestItem(spine['@_idref']);
-                }
-
-
-
+                console.log(manifestItemObject);
             });
+        } else {
+            const manifestItemObject = this.getManifestItem(this.spine['@_idref']);
+        }
 
-        });    
+
 
         // console.log(this)
     }
 
     getManifestItem(id) {
-        this.files.then(async (result) => {
-            await result.file(this.contentFullPath).async('string').then((content) => {
+        let manifestItemObject = undefined;
+        for (const manifestItem of this.manifest) {
+            if (manifestItem['@_id'] === id) {
+                manifestItemObject = manifestItem;
+                break;            
+            }            
+        }
 
-
-                console.log(content);
-            });
-        });    
+        return manifestItemObject;
     }
 
 
