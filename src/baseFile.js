@@ -11,7 +11,7 @@ class BaseFile {
             const data = fs.readFileSync(this.path);
             return data;
         } catch (error) {
-            // console.log(error);
+            console.log(error);
             return undefined;
         }
     }

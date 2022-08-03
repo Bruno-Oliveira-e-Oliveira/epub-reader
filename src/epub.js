@@ -51,7 +51,7 @@ class EPub {
                 this.spine = contentObject.package.spine.itemref;
             });
 
-            this.getSpineItems();
+            this.renderPages();
         });
     }
 
@@ -63,20 +63,22 @@ class EPub {
         }
     }
 
-    getSpineItems() {
+    renderPages() {
+        const pages = [];
+
         if (Array.isArray(this.spine)) {
             this.spine.forEach(spineItem => {
                 const manifestItemObject = this.getManifestItem(spineItem['@_idref']);
-
-                console.log(manifestItemObject);
+                pages.push(this.getPage(manifestItemObject));
             });
         } else {
             const manifestItemObject = this.getManifestItem(this.spine['@_idref']);
+            pages.push(this.getPage(manifestItemObject));
         }
 
 
 
-        // console.log(this)
+        console.log(pages);
     }
 
     getManifestItem(id) {
@@ -91,8 +93,24 @@ class EPub {
         return manifestItemObject;
     }
 
+    getPage(manifestItemObject) {
+        const fileFullPath = this.contentBasePath + manifestItemObject['@_href']; 
+        const filePromise = this.getFile(fileFullPath, 'string');    
+        return filePromise.then((file) => {
+            return file;
+        });   
+    }
+
+    getFile(fileName, readType) {
+        return this.files.then((filesObject) => {
+            return filesObject.file(fileName).async(readType).then((file) => {
+                return file;
+            })
+        });    
+    }
 
 
+    
 }
 
 module.exports = EPub;
