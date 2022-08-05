@@ -1,4 +1,5 @@
 const { XMLParser, XMLBuilder, XMLValidator } = require('fast-xml-parser');
+const Html = require('./html');
 
 class EPub {
     constructor(files) {
@@ -66,19 +67,40 @@ class EPub {
     renderPages() {
         const pages = [];
 
+
+        //--- test
+        let test = true;
+
+        
         if (Array.isArray(this.spine)) {
             this.spine.forEach(spineItem => {
-                const manifestItemObject = this.getManifestItem(spineItem['@_idref']);
-                pages.push(this.getPage(manifestItemObject));
+
+                //--- test
+                if (test) {
+
+
+                    const manifestItemObject = this.getManifestItem(spineItem['@_idref']);
+                    pages.push(this.getPage(manifestItemObject));
+
+
+                    test = false;
+                    // console.log(manifestItemObject);
+                }    
+
             });
         } else {
             const manifestItemObject = this.getManifestItem(this.spine['@_idref']);
             pages.push(this.getPage(manifestItemObject));
         }
 
+        pages.forEach(pagePromise => {
+            pagePromise.then((page) => {
+                const html = new Html(page);
+                html.read();
+            });
+        })
 
-
-        console.log(pages);
+        
     }
 
     getManifestItem(id) {
