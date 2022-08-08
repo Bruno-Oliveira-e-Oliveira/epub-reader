@@ -7,7 +7,8 @@ class Html {
         let baseContent = this.baseContent;
 
         //--- Test    
-        for (let index = 0; index < 2; index++) {
+        for (let index = 0; index < 10; index++) {
+            // console.log(baseContent)
             baseContent = this.getTag(baseContent);
         }
 
@@ -17,9 +18,9 @@ class Html {
         let tag  = {};
         let start = text.search('<');
         let end = text.search('>') + 1;
-        let originalContent = text.substring(start,end);
+        let originalContent = text.substring(start, end);
+        let croppedContent = this.removeTagSymbols(originalContent);
 
-        let croppedContent = this.removeTagSymbols(originalContent, start, end);
         tag.name = this.getTagName(croppedContent);
         let namePosition = croppedContent.search(tag.name) + tag.name.length;
         croppedContent = croppedContent.substring(namePosition);
@@ -34,9 +35,11 @@ class Html {
         return text.substring(end);
     }
 
-    removeTagSymbols(tag, start, end) {
-        let croppedContent = tag.substring(0, end -1);
-        croppedContent = croppedContent.substring(start +1);
+    removeTagSymbols(tag) {
+        let start = tag.search('<') + 1;
+        let end = tag.search('>');
+        let croppedContent = tag.substring(0, end);
+        croppedContent = croppedContent.substring(start);
         return croppedContent.trim();
     }
 
