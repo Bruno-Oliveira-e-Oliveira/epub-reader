@@ -4,6 +4,9 @@ class Html {
     }
 
     read() {
+
+        console.log('----------------------------------------------------------------')
+
         let baseContent = this.baseContent;
 
         //--- Test    
@@ -21,7 +24,9 @@ class Html {
         let originalContent = text.substring(start, end);
         let croppedContent = this.removeTagSymbols(originalContent);
 
-        tag.name = this.getTagName(croppedContent);
+        // detectSpecialTags(croppedContent);
+
+        tag.name = this.getTagName(croppedContent); //--- TODO - Error handler
         let namePosition = croppedContent.search(tag.name) + tag.name.length;
         croppedContent = croppedContent.substring(namePosition);
         croppedContent = croppedContent.trim();
@@ -31,6 +36,7 @@ class Html {
 
         console.log(originalContent);
         console.log(tag);
+        console.log('\n');
 
         return text.substring(end);
     }
@@ -43,9 +49,23 @@ class Html {
         return croppedContent.trim();
     }
 
+    // detectSpecialTags(tag) {
+    //     const DOCTYPE = '';
+    //     const HTMLCOMMENT = '';
+    //     const STYLE = '';
+
+    // }
+
     getTagName(tag){
         let firstSpace = tag.search(' ');
-        let tagName = tag.substring(0, firstSpace);
+        let tagName = undefined;
+        
+        if (firstSpace >= 0) {
+            tagName = tag.substring(0, firstSpace);
+        } else {
+            tagName = tag;
+        }
+
         tagName = tagName.replace(/[^a-zA-Z0-9 ]/g, '');
         return tagName;
     }    
