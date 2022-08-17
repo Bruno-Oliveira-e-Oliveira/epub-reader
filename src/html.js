@@ -8,21 +8,24 @@ class Html {
         console.log('----------------------------------------------------------------')
 
         let baseContent = this.baseContent;
+        let htmlObject  = { content:[] };
+        htmlObject = this.getTag(baseContent, htmlObject);
 
-        //--- Test    
-        for (let index = 0; index < 10; index++) {
-            // console.log(baseContent)
-            baseContent = this.getTag(baseContent);
-        }
-
+        console.log('\n');
+        console.log('Output:');
+        console.log(htmlObject);
     }
 
-    getTag(text) {
+    getTag(text, htmlObject) {
         let tag  = {};
         let start = text.search('<');
         let end = text.search('>') + 1;
         let originalContent = text.substring(start, end);
         let croppedContent = this.removeTagSymbols(originalContent);
+
+        if (start < 0) {          
+            return htmlObject;
+        }
 
         // detectSpecialTags(croppedContent);
 
@@ -34,11 +37,18 @@ class Html {
         tag.attributes = this.getTagAttributes(croppedContent);
         tag.inner = []; //--- TODO
 
-        console.log(originalContent);
-        console.log(tag);
-        console.log('\n');
+        // console.log(originalContent);
+        // console.log(tag);
+        // console.log('\n');
 
-        return text.substring(end);
+        htmlObject.content.push(tag);
+        let newText = text.substring(end);
+        
+        console.log('\n');
+        console.log(htmlObject);
+
+        htmlObject = this.getTag(newText, htmlObject);
+        return htmlObject; // Fix
     }
 
     removeTagSymbols(tag) {
@@ -50,10 +60,10 @@ class Html {
     }
 
     // detectSpecialTags(tag) {
-    //     const DOCTYPE = '';
-    //     const HTMLCOMMENT = '';
+    //     const DOCTYPE = '!DOCTYPE';
+    //     const HTMLCOMMENT = '!--';
     //     const STYLE = '';
-
+    //     const SCRIPT = '';
     // }
 
     getTagName(tag){
