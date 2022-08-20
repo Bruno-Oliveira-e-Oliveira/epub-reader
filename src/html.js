@@ -11,9 +11,9 @@ class Html {
         let htmlObject  = { content:[] };
         htmlObject = this.getTag(baseContent, htmlObject);
 
-        console.log('\n');
-        console.log('Output:');
-        console.log(htmlObject);
+        // console.log('\n');
+        // console.log('Output:');
+        // console.log(htmlObject);
     }
 
     getTag(text, htmlObject) {
@@ -37,18 +37,18 @@ class Html {
         tag.attributes = this.getTagAttributes(croppedContent);
         tag.inner = []; //--- TODO
 
-        // console.log(originalContent);
-        // console.log(tag);
-        // console.log('\n');
+
+        //--- TEST
+        console.log('------------------');
+        console.log(originalContent);
+        console.log(tag);
+        console.log('\n');
+
 
         htmlObject.content.push(tag);
         let newText = text.substring(end);
         
-        console.log('\n');
-        console.log(htmlObject);
-
-        htmlObject = this.getTag(newText, htmlObject);
-        return htmlObject; // Fix
+        return this.getTag(newText, htmlObject);
     }
 
     removeTagSymbols(tag) {
@@ -87,20 +87,37 @@ class Html {
         do {
             let attribute = {};
             let firstSpace = croppedContent.search(' ');
+            let firstQuotation = croppedContent.search('"');
 
-            if (firstSpace >= 0) {
-                attribute = this.divideAttributeNameAndValue(croppedContent.substring(0, firstSpace));
-                croppedContent = croppedContent.substring(firstSpace);
-                croppedContent = croppedContent.trim();     
-                attributes.push(attribute);
-            } else {
-                if (croppedContent.length > 0) {               
-                    attribute = this.divideAttributeNameAndValue(croppedContent);
-                    if (attribute) {
+            if ((firstSpace < 0) || (firstQuotation < 0)) { //--- Remove firstQuotation? 
+
+                if (firstSpace < 0 && firstQuotation < 0) {
+                    if (croppedContent.length > 0) {               
+                        attribute = this.divideAttributeNameAndValue(croppedContent, firstQuotation);
                         attributes.push(attribute);
                     }
+                    continueLoop = false;                     
+
+                } else if (firstSpace < 0 && firstQuotation >= 0){
+                    attribute = this.divideAttributeNameAndValue(croppedContent, firstQuotation);
+                    attributes.push(attribute);
+                    continueLoop = false;
+
+                } else if (true) {
+                    
                 }
-                continueLoop = false; 
+
+
+                
+                
+
+
+            } else if (firstSpace < firstQuotation) {
+                
+
+            } else {
+                
+
             }
 
         } while (continueLoop);
@@ -108,21 +125,25 @@ class Html {
         return attributes;
     }
 
-    divideAttributeNameAndValue(croppedContent) {
+    divideAttributeNameAndValue(text, firstQuotation) {
         let attribute = {};
-        let equalsPosition = croppedContent.search('=');
-
+        let equalsPosition = text.search('=');
+        let closeQuotation = undefined;
+        
         if (equalsPosition >= 0) {
-            attribute.name = croppedContent.substring(0, equalsPosition);
-            croppedContent = croppedContent.substring(equalsPosition + 1);
-            let firstChar = croppedContent.substring(0,1);
-            croppedContent = croppedContent.substring(1);
-            let endValuePosition = croppedContent.search(firstChar);
-            attribute.value = croppedContent.substring(0, endValuePosition);
-            return attribute;
+            attribute.name = text.substring(0, equalsPosition);
         } else {
-            return undefined; //--- attributes without value?
+            attribute.name = '';
         }
+
+        if (firstQuotation >= 0) {
+            text = text.substring(firstQuotation + 1);
+            closeQuotation = text.search('"');
+            text = text.substring(0, closeQuotation);            
+        }
+        attribute.value = text;
+
+        return attribute;
     }
 
 
