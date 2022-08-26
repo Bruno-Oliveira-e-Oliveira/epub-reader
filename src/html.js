@@ -88,36 +88,54 @@ class Html {
             let attribute = {};
             let firstSpace = croppedContent.search(' ');
             let firstQuotation = croppedContent.search('"');
+            let closeQuotation = undefined;
+            let textAttribute = undefined;
+            let nextSpace = undefined;
 
-            if ((firstSpace < 0) || (firstQuotation < 0)) { //--- Remove firstQuotation? 
+            if ((firstSpace < 0) || (firstQuotation < 0)) {
 
                 if (firstSpace < 0 && firstQuotation < 0) {
                     if (croppedContent.length > 0) {               
-                        attribute = this.divideAttributeNameAndValue(croppedContent, firstQuotation);
+                        attribute = this.divideAttributeNameAndValue(croppedContent, firstQuotation, closeQuotation);
                         attributes.push(attribute);
                     }
                     continueLoop = false;                     
 
                 } else if (firstSpace < 0 && firstQuotation >= 0){
-                    attribute = this.divideAttributeNameAndValue(croppedContent, firstQuotation);
+                    closeQuotation = croppedContent.indexOf('"', firstQuotation + 1);  
+                    attribute = this.divideAttributeNameAndValue(croppedContent, firstQuotation, closeQuotation);
                     attributes.push(attribute);
                     continueLoop = false;
-
-                } else if (true) {
                     
+                } else {
+                    textAttribute = croppedContent.substring(0, firstSpace);
+                    attribute = this.divideAttributeNameAndValue(textAttribute, firstQuotation, closeQuotation);
+                    attributes.push(attribute);   
+                    croppedContent = croppedContent.substring(firstSpace);
+                    croppedContent = croppedContent.trim()                    
                 }
 
-
-                
-                
-
-
             } else if (firstSpace < firstQuotation) {
-                
+                let quotation = -1;
+                textAttribute = croppedContent.substring(0, firstSpace);
+                attribute = this.divideAttributeNameAndValue(textAttribute, quotation, closeQuotation);
+                attributes.push(attribute); 
+                croppedContent = croppedContent.substring(firstSpace);
+                croppedContent = croppedContent.trim()
 
             } else {
+                closeQuotation = croppedContent.indexOf('"', firstQuotation + 1);
+                nextSpace = croppedContent.indexOf(' ', closeQuotation + 1);
                 
+                if (nextSpace < 0) {
+                    nextSpace = closeQuotation + 1;
+                }
 
+                textAttribute = croppedContent.substring(0, nextSpace);
+                attribute = this.divideAttributeNameAndValue(textAttribute, firstQuotation, closeQuotation);
+                attributes.push(attribute);   
+                croppedContent = croppedContent.substring(nextSpace);
+                croppedContent = croppedContent.trim()    
             }
 
         } while (continueLoop);
@@ -125,10 +143,11 @@ class Html {
         return attributes;
     }
 
-    divideAttributeNameAndValue(text, firstQuotation) {
+    divideAttributeNameAndValue(text, firstQuotation, closeQuotation) {
         let attribute = {};
         let equalsPosition = text.search('=');
-        let closeQuotation = undefined;
+        let start = firstQuotation + 1;
+        let end = closeQuotation;  
         
         if (equalsPosition >= 0) {
             attribute.name = text.substring(0, equalsPosition);
@@ -137,9 +156,7 @@ class Html {
         }
 
         if (firstQuotation >= 0) {
-            text = text.substring(firstQuotation + 1);
-            closeQuotation = text.search('"');
-            text = text.substring(0, closeQuotation);            
+            text = text.substring(start, end);          
         }
         attribute.value = text;
 
