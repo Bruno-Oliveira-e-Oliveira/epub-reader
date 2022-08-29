@@ -11,30 +11,35 @@ class Html {
         let htmlObject  = { content:[] };
         htmlObject = this.getTag(baseContent, htmlObject);
 
-        // console.log('\n');
-        // console.log('Output:');
-        // console.log(htmlObject);
+        console.log('\n');
+        console.log('Output:');
+        console.log(htmlObject);
     }
 
     getTag(text, htmlObject) {
+        let newText = undefined;
+        let namePosition  = undefined;
+        let originalContent = undefined;
+        let croppedContent = undefined;    
+        let closeTag = undefined;    
         let tag  = {};
         let start = text.search('<');
         let end = text.search('>') + 1;
-        let originalContent = text.substring(start, end);
-        let croppedContent = this.removeTagSymbols(originalContent);
 
         if (start < 0) {          
             return htmlObject;
         }
 
-        // detectSpecialTags(croppedContent);
-
+        originalContent = text.substring(start, end);
+        croppedContent = this.removeTagSymbols(originalContent);
+        closeTag = this.detectCloseTags(croppedContent);
         tag.name = this.getTagName(croppedContent); //--- TODO - Error handler
-        let namePosition = croppedContent.search(tag.name) + tag.name.length;
+        namePosition = croppedContent.search(tag.name) + tag.name.length;
         croppedContent = croppedContent.substring(namePosition);
         croppedContent = croppedContent.trim();
 
         tag.attributes = this.getTagAttributes(croppedContent);
+        tag.close = closeTag;
         tag.inner = []; //--- TODO
 
 
@@ -46,7 +51,7 @@ class Html {
 
 
         htmlObject.content.push(tag);
-        let newText = text.substring(end);
+        newText = text.substring(end);
         
         return this.getTag(newText, htmlObject);
     }
@@ -59,12 +64,24 @@ class Html {
         return croppedContent.trim();
     }
 
-    // detectSpecialTags(tag) {
-    //     const DOCTYPE = '!DOCTYPE';
-    //     const HTMLCOMMENT = '!--';
-    //     const STYLE = '';
-    //     const SCRIPT = '';
-    // }
+    detectCloseTags(tag) {
+        let closeTag = false;
+        let firstSpace = tag.search(' ');
+        let slashPosition = tag.search('/')
+
+        if (slashPosition >= 0) {
+            if (firstSpace >= 0) {
+                if (slashPosition < firstSpace) {
+                    closeTag = true;
+                }
+                
+            } else {
+                closeTag = true;
+            }
+        }
+
+        return closeTag;
+    }
 
     getTagName(tag){
         let firstSpace = tag.search(' ');
