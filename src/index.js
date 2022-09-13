@@ -14,10 +14,11 @@ function main() {
    const Html = require('./html');
    const data = fs.readFileSync('test.html');
 
-    console.log(data.toString()); 
-
     let test = new Html(data.toString());
-    test.read();
+
+    let result = test.read();
+    fs.writeFileSync('result/result.json', JSON.stringify(result, undefined, 4));
+    
 
 
    

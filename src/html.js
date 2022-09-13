@@ -8,12 +8,12 @@ class Html {
         console.log('----------------------------------------------------------------')
 
         let baseContent = this.baseContent;
-        let htmlObject  = { content:[] };
+        let htmlObject  = [];
         htmlObject = this.getTag(baseContent, htmlObject);
 
-        console.log('\n');
-        console.log('Output:');
-        console.log(htmlObject);
+        htmlObject  = this.sortObject(htmlObject);
+
+        return {"object":htmlObject};
     }
 
     getTag(text, htmlObject) {
@@ -40,17 +40,9 @@ class Html {
 
         tag.attributes = this.getTagAttributes(croppedContent);
         tag.close = closeTag;
-        tag.inner = []; //--- TODO
+        tag.inner = [];
 
-
-        //--- TEST
-        console.log('------------------');
-        console.log(originalContent);
-        console.log(tag);
-        console.log('\n');
-
-
-        htmlObject.content.push(tag);
+        htmlObject.push(tag);
         newText = text.substring(end);
         
         return this.getTag(newText, htmlObject);
@@ -180,7 +172,50 @@ class Html {
         return attribute;
     }
 
+    sortObject(originalObject) {
+        let temp = [];
+        let tempReverse = undefined;
+        let inner = undefined;
+        let insertInner = undefined;
 
+        for (const tag of originalObject) {
+            if (tag.close) {
+                tempReverse = temp;
+                temp = [];
+                inner = [];
+                insertInner = true;
+
+                for (const tagB of tempReverse.reverse()) {
+                    if (tag.name === tagB.name) {
+                        
+                        tagB.inner = inner;
+                        temp.unshift(tagB);
+                        insertInner = false;
+
+                    } else {
+
+                        if (insertInner) {
+                            inner.unshift(tagB);
+                        } else {
+                            temp.unshift(tagB);
+                        }
+                    }
+                }
+
+            } else {
+                temp.push(tag);
+            }
+
+        }
+
+        console.log('Temp');
+        console.log(temp)        
+        
+
+
+        return temp;
+    }
+    
 
 }
 
