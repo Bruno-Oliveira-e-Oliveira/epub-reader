@@ -7,45 +7,66 @@ class Html {
 
         console.log('----------------------------------------------------------------')
 
-        let baseContent = this.baseContent;
+        let baseContent = this.baseContent;  
         let htmlObject  = [];
-        htmlObject = this.getTag(baseContent, htmlObject);
 
-        htmlObject  = this.sortObject(htmlObject);
+        baseContent = baseContent.replace(/(\r\n|\n|\r)/gm, '');
+        htmlObject = this.parse(baseContent, htmlObject);
+        htmlObject  = this.sortObject(htmlObject); 
 
         return {"object":htmlObject};
     }
 
-    getTag(text, htmlObject) {
+    parse(text, htmlObject) {
         let newText = undefined;
         let namePosition  = undefined;
         let originalContent = undefined;
         let croppedContent = undefined;    
         let closeTag = undefined;    
         let tag  = {};
-        let start = text.search('<');
-        let end = text.search('>') + 1;
+        let start = undefined;
+        let end = undefined;
+        let content = undefined;
 
-        if (start < 0) {          
-            return htmlObject;
+        text = text.trim();
+        start = text.search('<');
+        end = text.search('>') + 1;        
+        content = text.substring(0, start)
+
+        if (content.length > 0 || start < 0 && text.length > 0) {
+            if (start < 0) {
+                content = text;
+                newText = '';
+            } else {
+                newText = text.substring(start);
+            }
+
+            content = content.trim();
+            htmlObject.push(content);
+            
+        } else {
+            if (start < 0) {          
+                return htmlObject;
+            }
+    
+            originalContent = text.substring(start, end);
+            croppedContent = this.removeTagSymbols(originalContent);
+            closeTag = this.detectCloseTags(croppedContent);
+            tag.name = this.getTagName(croppedContent); //--- TODO - Error handler
+            namePosition = croppedContent.search(tag.name) + tag.name.length;
+            croppedContent = croppedContent.substring(namePosition);
+            croppedContent = croppedContent.trim();
+    
+            tag.attributes = this.getTagAttributes(croppedContent);
+            tag.close = closeTag;
+            tag.inner = [];
+    
+            htmlObject.push(tag);
+            newText = text.substring(end);
+            
         }
 
-        originalContent = text.substring(start, end);
-        croppedContent = this.removeTagSymbols(originalContent);
-        closeTag = this.detectCloseTags(croppedContent);
-        tag.name = this.getTagName(croppedContent); //--- TODO - Error handler
-        namePosition = croppedContent.search(tag.name) + tag.name.length;
-        croppedContent = croppedContent.substring(namePosition);
-        croppedContent = croppedContent.trim();
-
-        tag.attributes = this.getTagAttributes(croppedContent);
-        tag.close = closeTag;
-        tag.inner = [];
-
-        htmlObject.push(tag);
-        newText = text.substring(end);
-        
-        return this.getTag(newText, htmlObject);
+        return this.parse(newText, htmlObject);
     }
 
     removeTagSymbols(tag) {
@@ -187,13 +208,10 @@ class Html {
 
                 for (const tagB of tempReverse.reverse()) {
                     if (tag.name === tagB.name) {
-                        
                         tagB.inner = inner;
                         temp.unshift(tagB);
                         insertInner = false;
-
                     } else {
-
                         if (insertInner) {
                             inner.unshift(tagB);
                         } else {
@@ -205,14 +223,7 @@ class Html {
             } else {
                 temp.push(tag);
             }
-
         }
-
-        console.log('Temp');
-        console.log(temp)        
-        
-
-
         return temp;
     }
     
