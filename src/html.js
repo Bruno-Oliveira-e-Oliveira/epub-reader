@@ -8,16 +8,18 @@ class Html {
         console.log('----------------------------------------------------------------')
 
         let baseContent = this.baseContent;  
-        let htmlObject  = [];
+        let htmlObject = [];
+        let specialTag = undefined;
 
         baseContent = baseContent.replace(/(\r\n|\n|\r)/gm, '');
-        htmlObject = this.parse(baseContent, htmlObject);
+        htmlObject = this.parse(baseContent, specialTag, htmlObject);
+
         htmlObject  = this.sortObject(htmlObject); 
 
         return {"object":htmlObject};
     }
 
-    parse(text, htmlObject) {
+    parse(text, specialTag, htmlObject) {
         let newText = undefined;
         let namePosition  = undefined;
         let originalContent = undefined;
@@ -27,6 +29,42 @@ class Html {
         let start = undefined;
         let end = undefined;
         let content = undefined;
+
+        if (specialTag) {
+            let name = undefined;
+            let innerTag = '';
+            let continueLoop = true;
+            text = text.trim();
+
+            while (continueLoop) { //Infinity loop?
+                start = text.search('<');
+                end = text.search('>') + 1;        
+                content = text.substring(0, start)
+    
+                originalContent = text.substring(start, end);
+                croppedContent = this.removeTagSymbols(originalContent);
+                closeTag = this.detectCloseTags(croppedContent);
+                name = this.getTagName(croppedContent); //--- TODO - Error handler
+
+                if (specialTag === name && closeTag) {
+                    if (content.length > 0) {
+                        innerTag += content;
+                        text = text.substring(start);    
+                    }
+                    continueLoop = false;
+
+                } else {
+                    innerTag += text.substring(0, end);
+                    text = text.substring(end);
+                }                
+            }
+
+            if (innerTag.length > 0){
+                htmlObject.push(innerTag);
+            }
+
+            specialTag = undefined;
+        } 
 
         text = text.trim();
         start = text.search('<');
@@ -56,17 +94,16 @@ class Html {
             namePosition = croppedContent.search(tag.name) + tag.name.length;
             croppedContent = croppedContent.substring(namePosition);
             croppedContent = croppedContent.trim();
-    
             tag.attributes = this.getTagAttributes(croppedContent);
             tag.close = closeTag;
             tag.inner = [];
-    
+            specialTag = this.detectSpecialTags(tag);
+            
             htmlObject.push(tag);
             newText = text.substring(end);
-            
         }
 
-        return this.parse(newText, htmlObject);
+        return this.parse(newText, specialTag, htmlObject);
     }
 
     removeTagSymbols(tag) {
@@ -109,6 +146,20 @@ class Html {
         tagName = tagName.replace(/[^a-zA-Z0-9 ]/g, '');
         return tagName;
     }    
+
+    detectSpecialTags(tag) {
+        let specialTag = undefined;
+        const specialTags = ['style', 'script'];
+
+        if (!tag.close) {
+            specialTags.forEach(element => {
+                if (tag.name.toLowerCase() === element.toLowerCase()) {
+                    specialTag = element;
+                }  
+            });
+        }
+        return specialTag;
+    }
 
     getTagAttributes(croppedContent) {
         const attributes = [];
