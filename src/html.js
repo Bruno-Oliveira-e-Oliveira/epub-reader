@@ -29,6 +29,9 @@ class Html {
         let start = undefined;
         let end = undefined;
         let content = undefined;
+        let comment = undefined;
+        let startComment = undefined;
+        let endComment = undefined;        
 
         if (specialTag) {
             let name = undefined;
@@ -70,6 +73,8 @@ class Html {
         start = text.search('<');
         end = text.search('>') + 1;        
         content = text.substring(0, start)
+        startComment = text.search('<!--');
+        endComment = text.search('-->') + 3;
 
         if (content.length > 0 || start < 0 && text.length > 0) {
             if (start < 0) {
@@ -81,12 +86,18 @@ class Html {
 
             content = content.trim();
             htmlObject.push(content);
-            
+          
+        } else if (startComment <= start && startComment >= 0) {    
+            comment = text.substring(startComment, endComment);
+            comment = comment.trim();
+            newText = text.substring(endComment);
+            htmlObject.push(comment);
+
         } else {
             if (start < 0) {          
                 return htmlObject;
             }
-    
+
             originalContent = text.substring(start, end);
             croppedContent = this.removeTagSymbols(originalContent);
             closeTag = this.detectCloseTags(croppedContent);
@@ -277,9 +288,6 @@ class Html {
         }
         return temp;
     }
-    
-
 }
-
 
 module.exports = Html;
