@@ -197,7 +197,7 @@ class Html {
                     closeQuotation = croppedContent.indexOf('"', firstQuotation + 1);  
                     attribute = this.divideAttributeNameAndValue(croppedContent, firstQuotation, closeQuotation);
                     attributes.push(attribute);
-                    continueLoop = false;
+                    croppedContent = croppedContent.substring(closeQuotation + 1);
                     
                 } else {
                     textAttribute = croppedContent.substring(0, firstSpace);
